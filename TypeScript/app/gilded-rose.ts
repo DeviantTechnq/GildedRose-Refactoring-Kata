@@ -10,6 +10,9 @@ export class Item {
   }
 }
 
+const MAX_QUALITY = 50;
+const MIN_QUALITY = 0;
+
 export class GildedRose {
   items: Array<Item>;
 
@@ -21,7 +24,7 @@ export class GildedRose {
   // Should rename to updateItems
   updateQuality() {
     for (const item of this.items) {
-      // Exception handling for Sulfuras, as it's not sold nor does it degrade in quality
+      // Exception handling for Sulfuras, as it's not sold nor does it degrade in quality (80)
       if (item.name === 'Sulfuras, Hand of Ragnaros') {
         continue;
       }
@@ -67,7 +70,7 @@ export class GildedRose {
   // Update the quality of Backstage passes based on their sellIn value
   private updateBackstagePasses(item: Item) {
     if (item.sellIn < 0) {
-      item.quality = 0;
+      item.quality = MIN_QUALITY;
     } else if (item.sellIn < 5) {
       this.increaseQuality(item, 3);
     } else if (item.sellIn < 10) {
@@ -95,13 +98,13 @@ export class GildedRose {
     }
   }
 
-  // Increase the quality of an item, ensuring it doesn't exceed 50
+  // Increase the quality of an item, ensuring it doesn't exceed MAX_QUALITY
   private increaseQuality(item: Item, amount: number = 1) {
-    item.quality = Math.min(50, item.quality + amount);
+    item.quality = Math.min(MAX_QUALITY, item.quality + amount);
   }
 
-  // Decrease the quality of an item, ensuring it doesn't go below 0
+  // Decrease the quality of an item, ensuring it doesn't go below MIN_QUALITY
   private decreaseQuality(item: Item, amount: number = 1) {
-    item.quality = Math.max(0, item.quality - amount);
+    item.quality = Math.max(MIN_QUALITY, item.quality - amount);
   }
 }
