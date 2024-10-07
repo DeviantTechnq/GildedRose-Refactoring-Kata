@@ -17,53 +17,91 @@ export class GildedRose {
     this.items = items;
   }
 
+  // Update the sellIn and quality of all items in the inventory
+  // Should rename to updateItems
   updateQuality() {
-    for (let i = 0; i < this.items.length; i++) {
-      if (this.items[i].name != 'Aged Brie' && this.items[i].name != 'Backstage passes to a TAFKAL80ETC concert') {
-        if (this.items[i].quality > 0) {
-          if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-            this.items[i].quality = this.items[i].quality - 1
-          }
-        }
-      } else {
-        if (this.items[i].quality < 50) {
-          this.items[i].quality = this.items[i].quality + 1
-          if (this.items[i].name == 'Backstage passes to a TAFKAL80ETC concert') {
-            if (this.items[i].sellIn < 11) {
-              if (this.items[i].quality < 50) {
-                this.items[i].quality = this.items[i].quality + 1
-              }
-            }
-            if (this.items[i].sellIn < 6) {
-              if (this.items[i].quality < 50) {
-                this.items[i].quality = this.items[i].quality + 1
-              }
-            }
-          }
-        }
+    for (const item of this.items) {
+      // Exception handling for Sulfuras, as it's not sold nor does it degrade in quality
+      if (item.name === 'Sulfuras, Hand of Ragnaros') {
+        continue;
       }
-      if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-        this.items[i].sellIn = this.items[i].sellIn - 1;
-      }
-      if (this.items[i].sellIn < 0) {
-        if (this.items[i].name != 'Aged Brie') {
-          if (this.items[i].name != 'Backstage passes to a TAFKAL80ETC concert') {
-            if (this.items[i].quality > 0) {
-              if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-                this.items[i].quality = this.items[i].quality - 1
-              }
-            }
-          } else {
-            this.items[i].quality = this.items[i].quality - this.items[i].quality
-          }
-        } else {
-          if (this.items[i].quality < 50) {
-            this.items[i].quality = this.items[i].quality + 1
-          }
-        }
-      }
+
+      this.updateSellIn(item);
+      this.updateItemQuality(item);
     }
 
     return this.items;
+  }
+
+  // Decrease the sellIn value of an item
+  private updateSellIn(item: Item) {
+    item.sellIn--;
+  }
+
+  // Update the quality of an item based on its name
+  private updateItemQuality(item: Item) {
+    switch (true) {
+      case item.name.startsWith('Conjured'):
+        this.updateConjuredItem(item);
+        break;
+      case item.name.startsWith('Aged'):
+        this.updateAgedItem(item);
+        break;
+      case item.name === 'Backstage passes to a TAFKAL80ETC concert':
+        this.updateBackstagePasses(item);
+        break;
+      default:
+        this.updateRegularItem(item);
+    }
+  }
+
+  // Update the quality of Aged items based on their sellIn value
+  private updateAgedItem(item: Item) {
+    if (item.sellIn < 0) {
+      this.increaseQuality(item, 2);
+    } else {
+      this.increaseQuality(item);
+    }
+  }
+  
+  // Update the quality of Backstage passes based on their sellIn value
+  private updateBackstagePasses(item: Item) {
+    if (item.sellIn < 0) {
+      item.quality = 0;
+    } else if (item.sellIn < 5) {
+      this.increaseQuality(item, 3);
+    } else if (item.sellIn < 10) {
+      this.increaseQuality(item, 2);
+    } else {
+      this.increaseQuality(item);
+    }
+  }
+
+  // Update the quality of Conjured items based on their sellIn value
+  private updateConjuredItem(item: Item) {
+    if (item.sellIn < 0) {
+      this.decreaseQuality(item, 4);
+    } else {
+      this.decreaseQuality(item, 2);
+    }
+  }
+
+  // Update the quality of regular items based on their sellIn value
+  private updateRegularItem(item: Item) {
+    if (item.sellIn < 0) {
+      this.decreaseQuality(item, 2);
+    } else {
+      this.decreaseQuality(item);
+    }
+  }
+
+  // Increase the quality of an item, ensuring it doesn't exceed 50
+  private increaseQuality(item: Item, amount: number = 1) {
+    item.quality = Math.min(50, item.quality + amount);
+  }
+
+  // Decrease the quality of an item, ensuring it doesn't go below 0
+  private decreaseQuality(item: Item, amount: number = 1) {
+    item.quality = Math.max(0, item.quality - amount);
   }
 }
